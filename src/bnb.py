@@ -1,10 +1,11 @@
 from copy import deepcopy
 from time import time
 from Node import Node, flatten, display_puzzle
-import heapq
+from queue import PriorityQueue
 
 # heuristik untuk tidak membangkitkan node dengan konfigurasi yang sama
 seen_combination = dict()
+generated_node = 0
 
 
 def solvable(puzzle) -> bool:
@@ -24,7 +25,10 @@ def solvable(puzzle) -> bool:
             if j < i and j != 0:
                 temp += 1
         kurang[i] = temp
-
+    print("-- Fungsi KURANG(i) -- ")
+    for i in range(1, 17):
+        print(f"{i}: {kurang[i]}")
+    print()
     return sum(kurang) + x
 
 
@@ -68,10 +72,9 @@ def move(puzzle: list, empty_position: tuple, direction: str) -> list:
     return puzzle_copy
 
 
-def generate_child(puzzle_node: Node, parent_index: int) -> list:
-    global seen_combination
+def generate_child(puzzle_node: Node) -> list:
+    global seen_combination, generated_node
     moved_puzzle = []
-    moved_cost = []
 
     row, col = get_empty_position(puzzle_node.get_puzzle())
     direction_list = ["left", "right", "up", "down"]
@@ -80,78 +83,62 @@ def generate_child(puzzle_node: Node, parent_index: int) -> list:
     for direction in direction_list:
         move_puzzle = move(puzzle_node.get_puzzle(), (row, col), direction)
         if move_puzzle is not None:
-            move_node = Node(move_puzzle, parent_index,
+            move_node = Node(move_puzzle, puzzle_node,
                              puzzle_node.get_depth() + 1, direction)
-            move_cost = move_node.get_cost()
             if not seen_combination.get(str(move_node.get_puzzle())):
+                generated_node += 1
                 moved_puzzle.append(move_node)
-                moved_cost.append(move_cost)
                 seen_combination[str(move_node.get_puzzle())] = True
-    return (moved_puzzle, moved_cost)
+    return moved_puzzle
 
 
 def solve_15_puzzle(puzzle):
+    # Me-reset seen_combination dan generated_node
+    global seen_combination, generated_node
+    seen_combination = dict()
+    generated_node = 0
     print("\n15-PUZZLE SOLVER STARTING...\n")
 
     time_start = time()
     num = solvable(puzzle)
-    if not solvable(puzzle) % 2 == 0:
+    if not num % 2 == 0:
         print("Konfigurasi ini tidak dapat diselesaikan.")
         print("Nilai [SIGMA Kurang(i)] + X:", num)
         return
 
-    # Membuat list sebagai implementasi tree yaitu list node,
-    # serta list cost untuk dicari nilai minimum
-    q: list[Node] = []
-    costs: list[int] = []
+    q = PriorityQueue()
 
-    rootNode = Node(puzzle, -1, 0, None)
-    rootNode.set_expanded(True)
-    if (rootNode.calculate_g() == 0):
-        print("Puzzle sudah berada tempatnya!")
+    root_node = Node(puzzle, None, 0, None)
+    if (root_node.calculate_g() == 0):
+        print("Puzzle sudah berada pada posisi solusi!")
         return
 
-    q.append(rootNode)
-    costs.append(rootNode.get_cost())
-
-    # Menghasilkan child pertama
-    children_node, children_cost = generate_child(rootNode, 0)
-    q.extend(children_node)
-    costs.extend(children_cost)
-
-    # Menghasilkan index dengan cost minimum
-    min_index, _ = min(enumerate(costs), key=lambda x: x[1])
-    g = q[min_index].calculate_g()
-
+    min_node = root_node
     # Selama goal node belum tercapai, lakukan iterasi untuk mencari node hingga g = 0
-    while (g > 0):
-        children_node, children_cost = generate_child(q[min_index], min_index)
-        q[min_index].set_expanded(True)
-        costs[min_index] = float("inf")
-        q.extend(children_node)
-        costs.extend(children_cost)
-
-        min_index, _ = min(enumerate(costs), key=lambda x: x[1])
-        g = q[min_index].calculate_g()
+    while (min_node.calculate_g() > 0):
+        child_nodes = generate_child(min_node)
+        for node in child_nodes:
+            q.put(node)
+        min_node: Node = q.get()
 
     time_stop = time()
 
-    # Membuat path puzzle dari goal node ke root node
-    solution = q[min_index]
-    solution_path: list[Node] = [solution]
-    while (solution.get_parent_index() != 0):
-        solution = q[solution.get_parent_index()]
-        solution_path.append(solution)
+    # step tidak
+    steps = [min_node]
+    parent_node = min_node.get_parent_node()
+    while parent_node.get_parent_node() is not None:
+        steps.append(parent_node)
+        parent_node = parent_node.get_parent_node()
 
-    solution_path.reverse()
+    steps.reverse()
 
-    for node in solution_path:
+    for node in steps:
         display_puzzle(node.get_puzzle())
         print(f"arah: {node.get_previous_move()}\n")
 
     print("PUZZLE BERHASIL DISELESAIKAN")
     print(f"Waktu eksekusi: {time_stop - time_start} s")
-    print(f"Kedalaman / step: {len(solution_path)}")
-    print(f"Node dibangkitkan: {len(q)}")
+    print(f"Kedalaman / step: {min_node.get_depth()}")
+    print(f"Node dibangkitkan: {generated_node}")
     print("Nilai [SIGMA Kurang(i)] + X:", num)
 

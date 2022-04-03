@@ -27,6 +27,8 @@ def main():
                 solve_15_puzzle(puzzle)
         elif cmd == "exit":
             pass
+        elif cmd == "help":
+            print_help()
         else:
             print("Command tidak diketahui!")
         cmd = input("\n> ")

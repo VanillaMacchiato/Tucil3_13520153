@@ -1,10 +1,9 @@
 class Node:
-    def __init__(self, puzzle: list, parent_index: int, depth: int, previous_move: str = None):
+    def __init__(self, puzzle: list, parent_node, depth: int, previous_move: str = None):
         self._puzzle = puzzle
-        self._parent_index = parent_index
+        self._parent_node = parent_node
         self._depth = depth
         self._cost = depth + self.calculate_g()  # c(P) = f(P) + g(P)
-        self._expanded = False
         self._previous_move = previous_move
 
     def calculate_g(self) -> int:
@@ -15,15 +14,13 @@ class Node:
                 g += 1
         return g
 
-    def get_parent_index(self) -> int:
-        return self._parent_index
+    def get_parent_node(self):
+        return self._parent_node
 
-    def get_puzzle(self):
+    def get_puzzle(self) -> list:
         return self._puzzle
 
     def get_cost(self):
-        if self._expanded:
-            return float("inf")
         return self._cost
 
     def get_previous_move(self) -> str:
@@ -32,18 +29,15 @@ class Node:
     def get_depth(self) -> int:
         return self._depth
 
-    def is_expanded(self) -> bool:
-        return self._expanded
-
     def debug(self) -> None:
         display_puzzle(self._puzzle)
-        print("parent index:", self._parent_index)
         print("cost:", self._cost)
         print("prev move:", self._previous_move)
         print()
 
-    def set_expanded(self, is_expanded: bool) -> None:
-        self._expanded = is_expanded
+    # operasi less than (<) untuk priority queue
+    def __lt__(self, other) -> bool:
+        return self.get_cost() < other.get_cost()
 
 
 def flatten(puzzle) -> list:
