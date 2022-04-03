@@ -61,7 +61,6 @@ def parse_console():
         row = input(f"[{i+1}]: ")
         puzzle_raw.append(row)
 
-    # Validasi puzzle dengan dictionary yang me-mapping dari 0 hingga 16
     valid, puzzle = parse_puzzle(puzzle_raw)
 
     if not valid:
