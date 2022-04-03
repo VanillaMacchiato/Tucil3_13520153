@@ -3,7 +3,7 @@ class Node:
         self._puzzle = puzzle
         self._parent_index = parent_index
         self._depth = depth
-        self._cost = depth + self.calculate_g()
+        self._cost = depth + self.calculate_g()  # c(P) = f(P) + g(P)
         self._expanded = False
         self._previous_move = previous_move
 

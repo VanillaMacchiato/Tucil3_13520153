@@ -28,15 +28,17 @@ instance4 = [[5, 1, 3, 4],
 
 # solvable (20 steps)
 instance5 = [[1, 6, 2, 4],
-            [5, 0, 3, 8],
-            [9, 7, 15, 11],
-            [13, 14, 10, 12]]
+             [5, 0, 3, 8],
+             [9, 7, 15, 11],
+             [13, 14, 10, 12]]
 
 # solvable (30 steps)
 instance6 = [[5, 2, 8, 10],
              [1, 11, 6, 4],
              [7, 9, 0, 3],
              [13, 14, 15, 12]]
+
+seen_combination = dict()
 
 
 def solvable(puzzle) -> bool:
@@ -70,7 +72,7 @@ def get_empty_position(puzzle) -> tuple:
 def move(puzzle: list, empty_position: tuple, direction: str) -> list:
     empty_row = empty_position[0]
     empty_col = empty_position[1]
-    puzzle_copy = deepcopy(puzzle)
+    
     x_mod = 0
     y_mod = 0
 
@@ -91,6 +93,8 @@ def move(puzzle: list, empty_position: tuple, direction: str) -> list:
             return
         x_mod = 1
 
+    puzzle_copy = deepcopy(puzzle)
+
     # Melakukan perubahan posisi
     tmp = puzzle_copy[empty_row + y_mod][empty_col + x_mod]
     puzzle_copy[empty_row + y_mod][empty_col + x_mod] = 0
@@ -99,63 +103,71 @@ def move(puzzle: list, empty_position: tuple, direction: str) -> list:
 
 
 def generate_child(puzzle_node: Node, parent_index: int) -> list:
+    global seen_combination
     moved_puzzle = []
+    moved_cost = []
 
     row, col = get_empty_position(puzzle_node.get_puzzle())
     direction_list = ["left", "right", "up", "down"]
-
-    # Menghilangkan move yang berlawanan dengan move sebelumnya
-    if puzzle_node.get_previous_move() == "left":
-        direction_list = ["left", "up", "down"]
-    elif puzzle_node.get_previous_move() == "right":
-        direction_list = ["right", "up", "down"]
-    elif puzzle_node.get_previous_move() == "up":
-        direction_list = ["left", "right", "up"]
-    elif puzzle_node.get_previous_move() == "down":
-        direction_list = ["left", "right", "down"]
 
     # Kombinasi arah
     for direction in direction_list:
         move_puzzle = move(puzzle_node.get_puzzle(), (row, col), direction)
         if move_puzzle is not None:
-            move_node = Node(move_puzzle, parent_index, puzzle_node.get_depth() + 1, direction)
-            moved_puzzle.append(move_node)
-    return moved_puzzle
+            move_node = Node(move_puzzle, parent_index,
+                             puzzle_node.get_depth() + 1, direction)
+            move_cost = move_node.get_cost()
+            if not seen_combination.get(str(move_node.get_puzzle())):
+                moved_puzzle.append(move_node)
+                moved_cost.append(move_cost)
+                seen_combination[str(move_node.get_puzzle())] = True
+    return (moved_puzzle, moved_cost)
 
 
 def solve_15_puzzle(puzzle):
+    print("\n15-PUZZLE SOLVER STARTING...\n")
 
     time_start = time()
     if not solvable(puzzle):
         print("Konfigurasi ini tidak dapat diselesaikan")
-        print(f"Waktu eksekusi: {time() - time_start} s")
         return
 
     q: list[Node] = []
+    costs: list[int] = []
+
     rootNode = Node(puzzle, -1, 0, None)
     rootNode.set_expanded(True)
+
     q.append(rootNode)
-    q.extend(generate_child(rootNode, 0))
+    costs.append(rootNode.get_cost())
 
-    min_index, min_node = min(enumerate(q), key=lambda el: el[1].get_cost() if not el[1].is_expanded() else float("inf"))
-    q.extend(generate_child(min_node, min_index))
-    q[min_index].set_expanded(True)
+    children_node, children_cost = generate_child(rootNode, 0)
+    q.extend(children_node)
+    costs.extend(children_cost)
 
-    g = min_node.calculate_g()
+    min_index, min_value = min(enumerate(costs), key=lambda x: x[1])
+    g = q[min_index].calculate_g()
+
     time_min_node = 0
     time_generate = 0
+    limit = 0
     while (g > 0):
+        time_generate_child = time()
+        children_node, children_cost = generate_child(q[min_index], min_index)
+        q[min_index].set_expanded(True)
+        costs[min_index] = float("inf")
+        q.extend(children_node)
+        costs.extend(children_cost)
+
+        time_generate += time() - time_generate_child
         time_node = time()
-        min_index, min_node = min(enumerate(q), key=lambda el: el[1].get_cost())
-        g = min_node.calculate_g()
+        min_index, min_value = min(enumerate(costs), key=lambda x: x[1])
+        g = q[min_index].calculate_g()
         time_min_node += time() - time_node
-        if (g > 0):
-            time_generate_child = time()
-            q.extend(generate_child(min_node, min_index))
-            q[min_index].set_expanded(True)
-            time_generate += time() - time_generate_child
-        
-    solution = min_node
+
+    time_stop = time()
+
+    solution = q[min_index]
     solution_path: list[Node] = [solution]
     while (solution.get_parent_index() != -1):
         solution = q[solution.get_parent_index()]
@@ -166,10 +178,12 @@ def solve_15_puzzle(puzzle):
     for node in solution_path:
         display_puzzle(node.get_puzzle())
         print()
-    print(f"Time to find min node: {time_min_node} s; Time to generate child: {time_generate} s")
+    print(
+        f"Time to find min node: {time_min_node} s; Time to generate child: {time_generate} s")
+    print(f"Waktu eksekusi: {time_stop - time_start} s")
     print(f"Kedalaman / step: {len(solution_path)}")
     print(f"Node dibangkitkan: {len(q)}")
-    print(f"Waktu eksekusi: {time() - time_start} s")
 
 
-solve_15_puzzle(instance4)
+if __name__ == "__main__":
+    solve_15_puzzle(instance6)
