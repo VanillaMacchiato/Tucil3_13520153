@@ -1,7 +1,7 @@
 from Node import display_puzzle
 
 
-def parse_puzzle(puzzle_raw: list[str]):
+def parse_puzzle(puzzle_raw: list):
     valid = True
     puzzle = []
     

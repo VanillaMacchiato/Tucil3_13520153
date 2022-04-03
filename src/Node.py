@@ -20,7 +20,7 @@ class Node:
     def get_puzzle(self) -> list:
         return self._puzzle
 
-    def get_cost(self):
+    def get_cost(self) -> int:
         return self._cost
 
     def get_previous_move(self) -> str:
@@ -41,6 +41,7 @@ class Node:
 
 
 def flatten(puzzle) -> list:
+    # Mengubah puzzle 2D menjadi 1D
     flattened = []
     for content in puzzle:
         flattened.extend(content)

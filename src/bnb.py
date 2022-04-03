@@ -5,6 +5,7 @@ from queue import PriorityQueue
 
 # heuristik untuk tidak membangkitkan node dengan konfigurasi yang sama
 seen_combination = dict()
+# jumlah node yang dibangkitkan
 generated_node = 0
 
 
@@ -32,7 +33,7 @@ def solvable(puzzle) -> bool:
     return sum(kurang) + x
 
 
-def get_empty_position(puzzle) -> tuple:
+def get_empty_position(puzzle: list) -> tuple:
     for row_index, row in enumerate(puzzle):
         for col_index, cell in enumerate(row):
             if cell == 0:
@@ -46,6 +47,7 @@ def move(puzzle: list, empty_position: tuple, direction: str) -> list:
     x_mod = 0
     y_mod = 0
 
+    # Jika direction tidak valid, return None
     if direction == "up":
         if empty_row == 0:
             return
@@ -65,7 +67,7 @@ def move(puzzle: list, empty_position: tuple, direction: str) -> list:
 
     puzzle_copy = deepcopy(puzzle)
 
-    # Melakukan perubahan posisi
+    # Melakukan perubahan posisi antara tile kosong dengan tile sebelahnya
     tmp = puzzle_copy[empty_row + y_mod][empty_col + x_mod]
     puzzle_copy[empty_row + y_mod][empty_col + x_mod] = 0
     puzzle_copy[empty_row][empty_col] = tmp
@@ -83,12 +85,14 @@ def generate_child(puzzle_node: Node) -> list:
     for direction in direction_list:
         move_puzzle = move(puzzle_node.get_puzzle(), (row, col), direction)
         if move_puzzle is not None:
-            move_node = Node(move_puzzle, puzzle_node,
-                             puzzle_node.get_depth() + 1, direction)
-            if not seen_combination.get(str(move_node.get_puzzle())):
+            # Jika move valid, cek apakah konfigurasi ini pernah dibangkitkan
+            if not seen_combination.get(str(move_puzzle)):
                 generated_node += 1
+                seen_combination[str(move_puzzle)] = True
+                move_node = Node(move_puzzle, puzzle_node,
+                                 puzzle_node.get_depth() + 1, direction)
                 moved_puzzle.append(move_node)
-                seen_combination[str(move_node.get_puzzle())] = True
+
     return moved_puzzle
 
 
@@ -97,6 +101,7 @@ def solve_15_puzzle(puzzle):
     global seen_combination, generated_node
     seen_combination = dict()
     generated_node = 0
+
     print("\n15-PUZZLE SOLVER STARTING...\n")
 
     time_start = time()
@@ -119,27 +124,26 @@ def solve_15_puzzle(puzzle):
         child_nodes = generate_child(min_node)
         for node in child_nodes:
             q.put(node)
-        min_node: Node = q.get()
+        min_node = q.get()
 
     time_stop = time()
 
-    # step tidak
+    # Lakukan iterasi dari node akhir ke root node
     steps = [min_node]
     parent_node = min_node.get_parent_node()
-    while parent_node.get_parent_node() is not None:
+    while parent_node is not None:
         steps.append(parent_node)
         parent_node = parent_node.get_parent_node()
 
     steps.reverse()
 
     for i, node in enumerate(steps):
-        print(f"Langkah ke-{i+1}:")
+        print(f"Langkah ke-{i}:")
         display_puzzle(node.get_puzzle())
-        print(f"arah: {node.get_previous_move()}\n")
+        print(f"arah: {node.get_previous_move() if (node.get_previous_move() is not None) else '-'}\n")
 
     print("PUZZLE BERHASIL DISELESAIKAN")
     print(f"Waktu eksekusi: {time_stop - time_start} s")
     print(f"Kedalaman / step: {min_node.get_depth()}")
     print(f"Node dibangkitkan: {generated_node}")
     print("Nilai [SIGMA Kurang(i)] + X:", num)
-
