@@ -132,7 +132,8 @@ def solve_15_puzzle(puzzle):
 
     steps.reverse()
 
-    for node in steps:
+    for i, node in enumerate(steps):
+        print(f"Langkah ke-{i+1}:")
         display_puzzle(node.get_puzzle())
         print(f"arah: {node.get_previous_move()}\n")
 
