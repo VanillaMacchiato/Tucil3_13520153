@@ -1,3 +1,5 @@
+from puzzle import flatten, display_puzzle
+
 class Node:
     def __init__(self, puzzle: list, parent_node, depth: int, previous_move: str = None):
         self._puzzle = puzzle
@@ -38,24 +40,3 @@ class Node:
     # operasi less than (<) untuk priority queue
     def __lt__(self, other) -> bool:
         return self.get_cost() < other.get_cost()
-
-
-def flatten(puzzle) -> list:
-    # Mengubah puzzle 2D menjadi 1D
-    flattened = []
-    for content in puzzle:
-        flattened.extend(content)
-    return flattened
-
-
-def display_puzzle(puzzle) -> None:
-    for row in puzzle:
-        for cell in row:
-            if cell < 10:
-                if cell == 0:
-                    print(" -", end=" ")
-                else:
-                    print(f" {cell}", end=" ")
-            else:
-                print(cell, end=" ")
-        print()

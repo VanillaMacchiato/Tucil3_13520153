@@ -1,5 +1,6 @@
 from read_input import parse_console, parse_file
 from bnb import solve_15_puzzle
+from puzzle_gen import generate, generate_menu
 
 
 def print_help():
@@ -7,6 +8,7 @@ def print_help():
     print("help: Menampilkan menu ini")
     print("file: Melakukan load puzzle dari file")
     print("type: Melakukan load puzzle dari input console")
+    print("gen: Melakukan pembangkitan acak oleh program")
     print("exit: Mengakhiri program")
 
 
@@ -29,6 +31,10 @@ def main():
             pass
         elif cmd == "help":
             print_help()
+        elif cmd == "gen":
+            success, puzzle = generate_menu()
+            if success:
+                solve_15_puzzle(puzzle)
         else:
             print("Command tidak diketahui!")
         cmd = input("\n> ")

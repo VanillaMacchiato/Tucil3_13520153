@@ -1,89 +1,23 @@
-from copy import deepcopy
 from time import time
-from Node import Node, flatten, display_puzzle
 from queue import PriorityQueue
+
+from Node import Node
+from puzzle import get_empty_position, move, display_puzzle, solvable
 
 # heuristik untuk tidak membangkitkan node dengan konfigurasi yang sama
 seen_combination = dict()
 # jumlah node yang dibangkitkan
 generated_node = 0
 
-
-def solvable(puzzle) -> bool:
-    kurang = [0 for _ in range(17)]
-    x = 0
-    flattened = flatten(puzzle)
-    for index, i in enumerate(flattened):
-        if i == 0:
-            i = 16
-            # Menentukan sel kosong di tempat arsir atau tidak
-            index_row = index // 4
-            index_col = index % 4
-            if (index_row + index_col % 2) == 1:
-                x = 1
-        temp = 0
-        for j in flattened[index+1:]:
-            if j < i and j != 0:
-                temp += 1
-        kurang[i] = temp
-    print("-- Fungsi KURANG(i) -- ")
-    for i in range(1, 17):
-        print(f"{i}: {kurang[i]}")
-    print()
-    return sum(kurang) + x
-
-
-def get_empty_position(puzzle: list) -> tuple:
-    for row_index, row in enumerate(puzzle):
-        for col_index, cell in enumerate(row):
-            if cell == 0:
-                return (row_index, col_index)
-
-
-def move(puzzle: list, empty_position: tuple, direction: str) -> list:
-    empty_row = empty_position[0]
-    empty_col = empty_position[1]
-
-    x_mod = 0
-    y_mod = 0
-
-    # Jika direction tidak valid, return None
-    if direction == "up":
-        if empty_row == 0:
-            return
-        y_mod = -1
-    elif direction == "down":
-        if empty_row == 3:
-            return
-        y_mod = 1
-    elif direction == "left":
-        if empty_col == 0:
-            return
-        x_mod = -1
-    elif direction == "right":
-        if empty_col == 3:
-            return
-        x_mod = 1
-
-    puzzle_copy = deepcopy(puzzle)
-
-    # Melakukan perubahan posisi antara tile kosong dengan tile sebelahnya
-    tmp = puzzle_copy[empty_row + y_mod][empty_col + x_mod]
-    puzzle_copy[empty_row + y_mod][empty_col + x_mod] = 0
-    puzzle_copy[empty_row][empty_col] = tmp
-    return puzzle_copy
-
-
 def generate_child(puzzle_node: Node) -> list:
     global seen_combination, generated_node
     moved_puzzle = []
 
-    row, col = get_empty_position(puzzle_node.get_puzzle())
     direction_list = ["left", "right", "up", "down"]
 
     # Kombinasi arah
     for direction in direction_list:
-        move_puzzle = move(puzzle_node.get_puzzle(), (row, col), direction)
+        move_puzzle = move(puzzle_node.get_puzzle(), direction)
         if move_puzzle is not None:
             # Jika move valid, cek apakah konfigurasi ini pernah dibangkitkan
             if not seen_combination.get(str(move_puzzle)):
@@ -140,7 +74,8 @@ def solve_15_puzzle(puzzle):
     for i, node in enumerate(steps):
         print(f"Langkah ke-{i}:")
         display_puzzle(node.get_puzzle())
-        print(f"arah: {node.get_previous_move() if (node.get_previous_move() is not None) else '-'}\n")
+        print(
+            f"arah: {node.get_previous_move() if (node.get_previous_move() is not None) else '-'}\n")
 
     print("PUZZLE BERHASIL DISELESAIKAN")
     print(f"Waktu eksekusi: {time_stop - time_start} s")
