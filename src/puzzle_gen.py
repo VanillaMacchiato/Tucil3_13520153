@@ -1,6 +1,6 @@
 import random
 
-from puzzle import display_puzzle, move, get_empty_position
+from puzzle import display_puzzle, move
 
 
 def generate(depth: int = 10):
@@ -14,14 +14,13 @@ def generate(depth: int = 10):
     realized_move = []
 
     new_state = state
+    # Mengubah posisi puzzle hingga length(realized_move) == depth
     while len(realized_move) < depth:
         move_direction = random.choice(move_list)
         status = move(new_state, move_direction)
         if status is not None:
             new_state = status
             realized_move.append(move_direction)
-        
-        
 
     return new_state
 

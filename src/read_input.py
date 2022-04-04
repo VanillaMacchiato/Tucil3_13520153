@@ -4,7 +4,7 @@ from Node import display_puzzle
 def parse_puzzle(puzzle_raw: list):
     valid = True
     puzzle = []
-    
+
     # Validasi puzzle dengan dictionary yang me-mapping dari 0 hingga 16
     number_map = dict([(str(x), 0) for x in range(16)])
 
@@ -28,14 +28,15 @@ def parse_file():
     print("\n>>INPUT 15-PUZZLE DARI FILE<<")
     print("Contoh: test/instance1.txt, instance1.txt")
     filename = input("Masukkan nama file: ")
-    
+
     success = False
     puzzle = []
     try:
         with open(filename, "r") as f:
             valid, puzzle = parse_puzzle(f.readlines())
             if valid:
-                print("Puzzle berhasil di-parse! Berikut konfigurasi puzzle yang terdeteksi:\n")
+                print(
+                    "Puzzle berhasil di-parse! Berikut konfigurasi puzzle yang terdeteksi:\n")
                 display_puzzle(puzzle)
                 confirm = input("\nProses puzzle ini (Y/N)? ")
                 if confirm.lower() == "y":
@@ -48,6 +49,7 @@ def parse_file():
         print("File tidak ditemukan!")
 
     return (success, puzzle)
+
 
 def parse_console():
     print(">>INPUT 15-PUZZLE DARI CONSOLE<<")
@@ -74,5 +76,4 @@ def parse_console():
         else:
             print("Proses dibatalkan")
 
-    return (success, puzzle)    
-    
+    return (success, puzzle)

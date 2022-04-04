@@ -1,5 +1,6 @@
 from puzzle import flatten, display_puzzle
 
+
 class Node:
     def __init__(self, puzzle: list, parent_node, depth: int, previous_move: str = None):
         self._puzzle = puzzle

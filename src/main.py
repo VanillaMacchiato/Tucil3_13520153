@@ -38,7 +38,7 @@ def main():
         else:
             print("Command tidak diketahui!")
         cmd = input("\n> ")
-        
+
     print("Terima kasih telah menggunakan program 15-puzzle solver :)")
 
 

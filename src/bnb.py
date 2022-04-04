@@ -9,6 +9,7 @@ seen_combination = dict()
 # jumlah node yang dibangkitkan
 generated_node = 0
 
+
 def generate_child(puzzle_node: Node) -> list:
     global seen_combination, generated_node
     moved_puzzle = []
